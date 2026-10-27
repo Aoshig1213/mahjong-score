@@ -80,8 +80,9 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 14px;
-  padding-top: calc(8px + env(safe-area-inset-top));
+  padding: 8px 14px 9px;
+  /* スマホの時計・電池の表示の下に、少し間をあけてから名前を置く */
+  padding-top: calc(16px + env(safe-area-inset-top));
   background: linear-gradient(rgb(5 25 16 / 0.92), rgb(5 25 16 / 0.82));
   border-bottom: 1px solid var(--panel-line);
 }
@@ -371,13 +372,20 @@ main {
   position: relative;
   display: inline-block;
   padding: 0;
-  background: linear-gradient(var(--tile-face-top), var(--tile-face-bottom));
+  /* 左上から光が当たったような表面のつや */
+  background:
+    radial-gradient(ellipse 90% 60% at 25% 10%, rgb(255 255 255 / 0.9), transparent 60%),
+    linear-gradient(170deg, var(--tile-face-top), var(--tile-face-bottom) 85%, #e6dcc0);
   border: 1px solid var(--tile-edge);
   border-radius: 6px;
   box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -2px 3px rgb(120 100 60 / 0.12),
     0 2px 0 #e3d8b9,
+    0 3px 0 #d8cca9,
     0 4px 0 var(--tile-back),
-    0 5px 7px rgb(0 0 0 / 0.4);
+    0 5px 0 #136b40,
+    0 6px 8px rgb(0 0 0 / 0.45);
   user-select: none;
   line-height: 0;
   vertical-align: bottom;
