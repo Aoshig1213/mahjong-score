@@ -1,5 +1,5 @@
 import type { TileCode } from '../engine/tiles';
-import { tileFaceSvg } from './tileSvg';
+import { tileFileName } from './tileImage';
 
 const HONORS = ['', '東', '南', '西', '北', '白', '發', '中'];
 const SUIT_NAMES: Record<string, string> = { m: '萬', p: '筒', s: '索' };
@@ -24,8 +24,7 @@ export function Tile({ tile, size = 'md', onClick, disabled, highlight, sideways
   const className = ['tile', `tile-${size}`, highlight ? 'tile-highlight' : '', sideways ? 'tile-sideways' : '']
     .filter(Boolean)
     .join(' ');
-  // 絵柄は固定の文字列から作るので、そのまま埋め込んでよい
-  const face = <svg className="tile-face" viewBox="0 0 60 80" aria-hidden="true" dangerouslySetInnerHTML={{ __html: tileFaceSvg(tile) }} />;
+  const face = <img className="tile-face" src={`${import.meta.env.BASE_URL}tiles/${tileFileName(tile)}`} alt="" draggable={false} />;
 
   if (!onClick) {
     return (

@@ -57,8 +57,8 @@ npm run build      公開用のファイルを dist\ に作る
 - `public\` の中身はそのまま公開される
   - `manifest.webmanifest` … ホーム画面に追加したときの名前・アイコン
   - `sw.js` … 通信がなくても開けるようにする（公開したものだけで動く。開発用サーバーでは動かさない）。アイコンや manifest を変えたら、中の `CACHE` の版を上げる
-  - アイコンの PNG … `node scripts\make-icons.mjs` で描き直せる（牌の絵柄は `src\ui\tileSvg.ts` と同じ。「中」の字は Windows の游明朝で描く）
-- 牌の絵柄は `src\ui\tileSvg.ts` の SVG。萬子・字牌は明朝体の漢字、筒子・索子は図柄
+  - アイコンの PNG … `node scripts\make-icons.mjs` で描き直せる（牌は `public\tiles\` の画像を使う）
+- 牌の絵柄は `public\tiles\` の SVG。[FluffyStuff/riichi-mahjong-tiles](https://github.com/FluffyStuff/riichi-mahjong-tiles) の Regular（パブリックドメイン・CC0）から、牌の面の絵柄だけを持ってきたもの。牌の書き方とファイル名の対応は `src\ui\tileImage.ts`。牌の本体（縁・厚み・つや）は CSS で描く
 - 成績などのデータはスマホのブラウザの中だけにあり、GitHub には送られない
 
 ## データの置き場所の注意

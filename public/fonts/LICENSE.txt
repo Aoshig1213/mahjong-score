@@ -1,7 +1,0 @@
-brush.ttf は、Yuji Boku から牌とロゴに使う文字だけを切り出したものです。
-
-Yuji Boku
-Copyright 2021 The Yuji Project Authors (https://github.com/Kinutafontfactory/Yuji)
-
-This Font Software is licensed under the SIL Open Font License, Version 1.1.
-https://openfontlicense.org/open-font-license-official-text/

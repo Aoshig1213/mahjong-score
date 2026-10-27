@@ -1,13 +1,16 @@
 // ホーム画面用のアイコン（PNG）を描いて public\ に書き出す。
-// 絵柄: 緑の卓の上に、中・一筒・一索の3枚を扇形に並べる。牌の絵柄は src\ui\tileSvg.ts と同じ。
+// 絵柄: 緑の卓の上に、中・一筒・一索の3枚を扇形に並べる。牌の絵柄は public\tiles\ の画像と同じ。
 //   node scripts/make-icons.mjs
-// 「中」などの漢字は游明朝（Windows に入っているもの）で描く。
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { tileFaceSvg } from '../src/ui/tileSvg.ts';
+import { tileFileName } from '../src/ui/tileImage.ts';
 
-const FONT = 'C:/Windows/Fonts/yumindb.ttf';
+/** 牌の絵柄の画像を、SVG の中に埋め込める形にする */
+function tileFace(code) {
+  const svg = readFileSync(new URL(`../public/tiles/${tileFileName(code)}`, import.meta.url));
+  return `data:image/svg+xml;base64,${svg.toString('base64')}`;
+}
 
 /** 牌1枚。中心 (cx, cy)、幅 w、傾き rot 度 */
 function tile(code, cx, cy, w, rot) {
@@ -21,7 +24,7 @@ function tile(code, cx, cy, w, rot) {
     <rect x="${x}" y="${y + h * 0.075}" width="${w}" height="${h}" rx="${r}" fill="#0f6a42"/>
     <rect x="${x}" y="${y + h * 0.04}" width="${w}" height="${h}" rx="${r}" fill="#e6dcc0"/>
     <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="url(#face)" stroke="#d6caa8" stroke-width="2"/>
-    <svg x="${x + w * 0.09}" y="${y + h * 0.07}" width="${w * 0.82}" height="${h * 0.86}" viewBox="0 0 60 80">${tileFaceSvg(code)}</svg>
+    <image x="${x + w * 0.04}" y="${y + h * 0.03}" width="${w * 0.92}" height="${h * 0.94}" preserveAspectRatio="xMidYMid meet" href="${tileFace(code)}"/>
   </g>`;
 }
 
@@ -47,7 +50,6 @@ const SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" vi
 function render(size) {
   return new Resvg(SVG, {
     fitTo: { mode: 'width', value: size },
-    font: { fontFiles: ['public/fonts/brush.ttf', FONT], loadSystemFonts: false, defaultFontFamily: 'Yu Mincho' },
   })
     .render()
     .asPng();

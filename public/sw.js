@@ -3,8 +3,13 @@
 // JS・CSS・画像はファイル名に版が入っているので、一度取ったものを使い続ける。
 
 // アイコンや manifest を変えたら版を上げる（古い保存が消えて、新しいものを取り直す）
-const CACHE = 'mahjong-score-v4';
-const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './apple-touch-icon.png', './fonts/brush.ttf'];
+const CACHE = 'mahjong-score-v5';
+// 牌の絵柄（src/ui/tileImage.ts と同じファイル名）
+const TILES = [
+  ...['Man', 'Pin', 'Sou'].flatMap((s) => [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `${s}${n}`).concat(`${s}5-Dora`)),
+  'Ton', 'Nan', 'Shaa', 'Pei', 'Haku', 'Hatsu', 'Chun',
+].map((name) => `./tiles/${name}.svg`);
+const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './apple-touch-icon.png', ...TILES];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
