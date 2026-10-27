@@ -43,19 +43,7 @@ export function GameTable(props: Props) {
       {finished ? (
         <FinalResult game={game} onFixScores={props.onFixScores} />
       ) : (
-        <section className="card round-card">
-          <p className="round-label">{roundLabel(round)}</p>
-          <p className="round-sub">供託 {round.kyotaku}本</p>
-          <ul className="score-list">
-            {names.map((name, p) => (
-              <li key={p} className={p === round.kyoku ? 'dealer' : ''}>
-                <span className="chip-wind">{WIND_NAMES[seatWind(p, round)]}</span>
-                <span className="score-name">{name}</span>
-                <span className="score-points">{game.scores[p].toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <TableView game={game} />
       )}
 
       {status === 'dealerMayEnd' && (
@@ -143,6 +131,49 @@ export function GameTable(props: Props) {
   );
 }
 
+/** 起家を手前に、席順（反時計回り）に右・向かい・左と座らせる */
+const SEAT_POSITIONS = ['bottom', 'right', 'top', 'left'] as const;
+
+function TableView({ game }: { game: Game }) {
+  const { round, scores } = game;
+  const order = ranking(game);
+  return (
+    <section className="table-view" aria-label="卓">
+      {game.settings.players.map((name, p) => {
+        const dealer = p === round.kyoku;
+        const rank = order.find((r) => r.player === p)!.rank;
+        return (
+          <div key={p} className={`seat seat-${SEAT_POSITIONS[p]}${dealer ? ' dealer' : ''}`}>
+            <div className="seat-head">
+              <span className="chip-wind">{WIND_NAMES[seatWind(p, round)]}</span>
+              <span className="seat-name">{name}</span>
+              {dealer && <span className="dealer-mark">親</span>}
+            </div>
+            <span className={scores[p] < 0 ? 'led minus' : 'led'}>{scores[p].toLocaleString()}</span>
+            <span className="seat-rank">{rank}位</span>
+          </div>
+        );
+      })}
+      <div className="table-center">
+        <span className="center-round">
+          {WIND_NAMES[round.wind]}
+          {round.kyoku + 1}局
+        </span>
+        <div className="sticks">
+          <span className="stick-row" aria-label={`${round.honba}本場`}>
+            <span className="stick stick-100" />
+            <span className="stick-count">×{round.honba}</span>
+          </span>
+          <span className="stick-row" aria-label={`供託${round.kyotaku}本`}>
+            <span className="stick stick-1000" />
+            <span className="stick-count">×{round.kyotaku}</span>
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FinalResult({ game, onFixScores }: { game: Game; onFixScores: (scores: number[]) => void }) {
   const names = game.settings.players;
   const [editing, setEditing] = useState<string[] | null>(null);
@@ -194,8 +225,8 @@ function FinalResult({ game, onFixScores }: { game: Game; onFixScores: (scores: 
   }
 
   return (
-    <section className="card result">
-      <h2>終局</h2>
+    <section className="result">
+      <h2 className="final-title">終局</h2>
       <table className="final-table">
         <thead>
           <tr>
@@ -207,7 +238,7 @@ function FinalResult({ game, onFixScores }: { game: Game; onFixScores: (scores: 
         </thead>
         <tbody>
           {ranking(game).map((r) => (
-            <tr key={r.player}>
+            <tr key={r.player} className={`rank-${r.rank}`}>
               <td>{r.rank}位</td>
               <td>{names[r.player]}</td>
               <td>{r.points.toLocaleString()}</td>

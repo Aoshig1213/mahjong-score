@@ -11,6 +11,7 @@ import { GameTable } from './ui/game/GameTable';
 import { loadGame, saveGame, saveLastPlayers, type SavedGame } from './ui/game/storage';
 import { WinFlow } from './ui/game/WinFlow';
 import { RulesPanel } from './ui/RulesPanel';
+import { Tile } from './ui/Tile';
 
 const RULES_KEY = 'mahjong-score.rules';
 /** 1局戻すために覚えておく局の数 */
@@ -25,6 +26,21 @@ function loadRules(): Rules {
   } catch {
     return DEFAULT_RULES;
   }
+}
+
+function MenuItem(props: { tile: string; title: string; desc: string; primary?: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className={props.primary ? 'menu-item primary' : 'menu-item'} onClick={props.onClick}>
+      <Tile tile={props.tile} size="sm" />
+      <span>
+        <span className="menu-title">{props.title}</span>
+        <span className="menu-desc">{props.desc}</span>
+      </span>
+      <span className="menu-arrow" aria-hidden="true">
+        ›
+      </span>
+    </button>
+  );
 }
 
 export function App() {
@@ -125,21 +141,35 @@ export function App() {
   } else {
     body = (
       <div className="screen">
-        {game && (
-          <button type="button" className="button primary big" onClick={() => setView('table')}>
-            続きから（{game.status === 'finished' ? '終局' : roundLabel(game.round)}）
-          </button>
-        )}
-        <button type="button" className={game ? 'button big' : 'button primary big'} onClick={() => setView('setup')}>
-          新しい対局
-        </button>
-        {game && <p className="hint">新しい対局を始めると、途中の対局は消えます</p>}
-        <button type="button" className="button big" onClick={() => setView('calc')}>
-          点数計算だけ使う
-        </button>
-        <button type="button" className="button big" onClick={() => setView('records')}>
-          成績
-        </button>
+        <div className="hero">
+          <div className="hero-tiles" aria-hidden="true">
+            <Tile tile="1p" size="lg" />
+            <Tile tile="7z" size="lg" />
+            <Tile tile="1s" size="lg" />
+          </div>
+          <h1>雀算</h1>
+          <p>麻雀点数計算・点棒管理・成績</p>
+        </div>
+        <nav className="menu">
+          {game && (
+            <MenuItem
+              primary
+              tile="6z"
+              title="続きから"
+              desc={game.status === 'finished' ? '終局した対局（まだ保存していません）' : `${roundLabel(game.round)}から再開`}
+              onClick={() => setView('table')}
+            />
+          )}
+          <MenuItem
+            primary={!game}
+            tile="1z"
+            title="新しい対局"
+            desc={game ? '始めると、途中の対局は消えます' : '席と持ち点を決めて、1局ずつ記録'}
+            onClick={() => setView('setup')}
+          />
+          <MenuItem tile="5m" title="点数計算" desc="手牌から点数だけを出す" onClick={() => setView('calc')} />
+          <MenuItem tile="9p" title="成績" desc="メンバーごとの順位・スコア・和了率" onClick={() => setView('records')} />
+        </nav>
         <RulesPanel rules={rules} onChange={changeRules} />
       </div>
     );
@@ -149,7 +179,14 @@ export function App() {
   return (
     <>
       <header className="app-header">
-        <h1>麻雀点数計算</h1>
+        <button type="button" className="brand" onClick={() => showHome && setView('home')} aria-label="雀算（ホームへ）">
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" />
+          <span>
+            <span className="brand-name">雀算</span>
+            <br />
+            <span className="brand-sub">麻雀点数計算</span>
+          </span>
+        </button>
         {showHome && (
           <button type="button" className="header-link" onClick={() => setView('home')}>
             ホーム

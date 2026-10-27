@@ -156,6 +156,7 @@ export function Calculator({ rules, context, onDone }: Props) {
             全部消す
           </button>
         </div>
+        <div className="rack">
         <div className="hand">
           <div className="hand-tiles">
             {sortedHand.map(({ tile, index }) => (
@@ -183,6 +184,7 @@ export function Calculator({ rules, context, onDone }: Props) {
             ))}
           </div>
         )}
+        </div>
         <div className="indicators">
           <span className="field-label">ドラ表示</span>
           {state.dora.map((t, i) => (

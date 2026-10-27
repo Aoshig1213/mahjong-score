@@ -1,4 +1,4 @@
-# mahjong-score — 麻雀の点数計算アプリ（スマホ向け Web アプリ）
+# 雀算（mahjong-score）— 麻雀の点数計算アプリ（スマホ向け Web アプリ）
 
 自分で麻雀を打つときに使う、点数計算と点棒管理のアプリ。2026-10-27 に立ち上げ。
 
@@ -56,8 +56,9 @@ npm run build      公開用のファイルを dist\ に作る
 - `main` に push すると、GitHub Actions（`.github\workflows\deploy.yml`）がテスト → ビルド → GitHub Pages に公開する。テストが落ちたら公開しない
 - `public\` の中身はそのまま公開される
   - `manifest.webmanifest` … ホーム画面に追加したときの名前・アイコン
-  - `sw.js` … 通信がなくても開けるようにする（公開したものだけで動く。開発用サーバーでは動かさない）
-  - アイコンの PNG … `node scripts\make-icons.mjs` で描き直せる
+  - `sw.js` … 通信がなくても開けるようにする（公開したものだけで動く。開発用サーバーでは動かさない）。アイコンや manifest を変えたら、中の `CACHE` の版を上げる
+  - アイコンの PNG … `node scripts\make-icons.mjs` で描き直せる（牌の絵柄は `src\ui\tileSvg.ts` と同じ。「中」の字は Windows の游明朝で描く）
+- 牌の絵柄は `src\ui\tileSvg.ts` の SVG。萬子・字牌は明朝体の漢字、筒子・索子は図柄
 - 成績などのデータはスマホのブラウザの中だけにあり、GitHub には送られない
 
 ## データの置き場所の注意

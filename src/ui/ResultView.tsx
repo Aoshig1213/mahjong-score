@@ -33,8 +33,11 @@ export function ResultView({ outcome }: { outcome: CalcOutcome }) {
     );
   }
   const r = outcome.result;
+  const times = r.yakuman.reduce((sum, y) => sum + y.times, 0);
+  const stamp = r.limit === 'yakuman' ? (YAKUMAN_TIMES[times] ?? `${times}倍役満`) : r.limit ? LIMIT_NAMES[r.limit] : null;
   return (
     <section className="result" id="result">
+      {stamp && <span className="stamp">{stamp}</span>}
       <p className="result-points">{paymentText(r.payment)}</p>
       <p className="result-grade">
         {gradeText(r)}

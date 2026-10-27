@@ -2,7 +2,8 @@
 // 画面（index.html）は通信できればいつも新しいものを取り、できなければ保存しておいたものを使う。
 // JS・CSS・画像はファイル名に版が入っているので、一度取ったものを使い続ける。
 
-const CACHE = 'mahjong-score-v1';
+// アイコンや manifest を変えたら版を上げる（古い保存が消えて、新しいものを取り直す）
+const CACHE = 'mahjong-score-v2';
 const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {

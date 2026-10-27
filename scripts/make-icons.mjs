@@ -1,81 +1,56 @@
 // ホーム画面用のアイコン（PNG）を描いて public\ に書き出す。
-// 絵柄: 緑の卓の上に一筒の牌を1枚。外部の画像ツールを使わずに描く。
+// 絵柄: 緑の卓の上に、中・一筒・一索の3枚を扇形に並べる。牌の絵柄は src\ui\tileSvg.ts と同じ。
 //   node scripts/make-icons.mjs
+// 「中」などの漢字は游明朝（Windows に入っているもの）で描く。
 
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { deflateSync, crc32 } from 'node:zlib';
+import { Resvg } from '@resvg/resvg-js';
+import { tileFaceSvg } from '../src/ui/tileSvg.ts';
 
-const FELT = [31, 95, 63];
-const TILE = [251, 248, 239];
-const TILE_EDGE = [201, 194, 173];
-const PIN = [31, 95, 168];
-const RED = [184, 50, 42];
+const FONT = 'C:/Windows/Fonts/yumindb.ttf';
 
-/** 角の丸い長方形の中か（中心 cx,cy、半幅 w、半高 h、角の半径 r） */
-function inRoundRect(x, y, cx, cy, w, h, r) {
-  const dx = Math.max(Math.abs(x - cx) - (w - r), 0);
-  const dy = Math.max(Math.abs(y - cy) - (h - r), 0);
-  return dx * dx + dy * dy <= r * r;
+/** 牌1枚。中心 (cx, cy)、幅 w、傾き rot 度 */
+function tile(code, cx, cy, w, rot) {
+  const h = w * 1.36;
+  const x = -w / 2;
+  const y = -h / 2;
+  const r = w * 0.12;
+  return `
+  <g transform="translate(${cx} ${cy}) rotate(${rot})">
+    <rect x="${x + 6}" y="${y + h * 0.1}" width="${w}" height="${h}" rx="${r}" fill="#000" opacity="0.28" filter="url(#blur)"/>
+    <rect x="${x}" y="${y + h * 0.075}" width="${w}" height="${h}" rx="${r}" fill="#0f6a42"/>
+    <rect x="${x}" y="${y + h * 0.04}" width="${w}" height="${h}" rx="${r}" fill="#e6dcc0"/>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="url(#face)" stroke="#d6caa8" stroke-width="2"/>
+    <svg x="${x + w * 0.09}" y="${y + h * 0.07}" width="${w * 0.82}" height="${h * 0.86}" viewBox="0 0 60 80">${tileFaceSvg(code)}</svg>
+  </g>`;
 }
 
-/** 0〜1 の座標で、その点の色 */
-function colorAt(x, y) {
-  const cx = 0.5;
-  const cy = 0.5;
-  const w = 0.24;
-  const h = 0.32;
-  if (!inRoundRect(x, y, cx, cy + 0.02, w, h, 0.05)) return FELT;
-  // 牌の下の厚み
-  if (!inRoundRect(x, y, cx, cy - 0.01, w, h - 0.01, 0.05)) return TILE_EDGE;
-  const d = Math.hypot(x - cx, y - (cy - 0.01));
-  if (d < 0.05) return RED;
-  if (d < 0.09) return TILE;
-  if (d < 0.17) return PIN;
-  return TILE;
-}
+const SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#2f8a5a"/>
+      <stop offset="1" stop-color="#0f3f28"/>
+    </radialGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf6"/>
+      <stop offset="1" stop-color="#f3ecd8"/>
+    </linearGradient>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#felt)"/>
+  <circle cx="256" cy="236" r="190" fill="none" stroke="#d9b45a" stroke-width="3" opacity="0.35"/>
+  ${tile('1p', 168, 262, 132, -17)}
+  ${tile('1s', 344, 262, 132, 17)}
+  ${tile('7z', 256, 236, 150, 0)}
+</svg>`;
 
-/** 4x4 で平均を取って、ふちをなめらかにする */
 function render(size) {
-  const ss = 4;
-  const rows = [];
-  for (let py = 0; py < size; py++) {
-    const row = Buffer.alloc(1 + size * 3);
-    for (let px = 0; px < size; px++) {
-      const sum = [0, 0, 0];
-      for (let sy = 0; sy < ss; sy++) {
-        for (let sx = 0; sx < ss; sx++) {
-          const c = colorAt((px + (sx + 0.5) / ss) / size, (py + (sy + 0.5) / ss) / size);
-          for (let i = 0; i < 3; i++) sum[i] += c[i];
-        }
-      }
-      for (let i = 0; i < 3; i++) row[1 + px * 3 + i] = Math.round(sum[i] / (ss * ss));
-    }
-    rows.push(row);
-  }
-  return Buffer.concat(rows);
-}
-
-function chunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length);
-  const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(body));
-  return Buffer.concat([len, body, crc]);
-}
-
-function png(size) {
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8; // ビット深度
-  ihdr[9] = 2; // RGB
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(render(size))),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
+  return new Resvg(SVG, {
+    fitTo: { mode: 'width', value: size },
+    font: { fontFiles: [FONT], loadSystemFonts: false, defaultFontFamily: 'Yu Mincho' },
+  })
+    .render()
+    .asPng();
 }
 
 mkdirSync(new URL('../public/', import.meta.url), { recursive: true });
@@ -84,6 +59,6 @@ for (const [name, size] of [
   ['icon-512.png', 512],
   ['apple-touch-icon.png', 180],
 ]) {
-  writeFileSync(new URL(`../public/${name}`, import.meta.url), png(size));
+  writeFileSync(new URL(`../public/${name}`, import.meta.url), render(size));
   console.log(`public/${name}`);
 }

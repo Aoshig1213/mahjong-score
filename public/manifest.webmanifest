@@ -1,14 +1,14 @@
 {
-  "name": "麻雀点数計算",
-  "short_name": "点数計算",
+  "name": "雀算 ― 麻雀点数計算",
+  "short_name": "雀算",
   "description": "麻雀の点数計算と、対局の点棒管理・成績の記録",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#eef2ef",
-  "theme_color": "#1f5f3f",
+  "background_color": "#0e3a25",
+  "theme_color": "#0a2b1b",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
