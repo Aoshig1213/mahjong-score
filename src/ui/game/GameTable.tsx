@@ -14,10 +14,13 @@ interface Props {
   onEndByDealer: () => void;
   onContinueByDealer: () => void;
   onFixScores: (scores: number[]) => void;
+  onSave: () => void;
+  /** 保存している途中 */
+  saving: boolean;
   onQuit: () => void;
 }
 
-function describe(record: HandRecord, names: string[]): string {
+export function describe(record: HandRecord, names: string[]): string {
   const e = record.event;
   if (e.kind === 'win') {
     const who = e.winners.map((w) => `${names[w.player]} ${paymentText(w.result.payment)}`).join('、');
@@ -111,13 +114,18 @@ export function GameTable(props: Props) {
       )}
 
       <div className="actions">
-        {finished ? (
-          <button type="button" className="button primary" onClick={props.onQuit}>
-            ホームへ
-          </button>
+        {finished && !confirmQuit ? (
+          <>
+            <button type="button" className="link" onClick={() => setConfirmQuit(true)}>
+              保存しないで終わる
+            </button>
+            <button type="button" className="button primary" disabled={props.saving} onClick={props.onSave}>
+              成績に保存
+            </button>
+          </>
         ) : confirmQuit ? (
           <>
-            <span className="hint">この対局を消してやめますか？</span>
+            <span className="hint">{finished ? '成績に残さずに終わりますか？' : 'この対局を消してやめますか？'}</span>
             <button type="button" className="button" onClick={() => setConfirmQuit(false)}>
               いいえ
             </button>

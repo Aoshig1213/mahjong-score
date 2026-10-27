@@ -794,3 +794,87 @@ button.tile:not(:disabled):active {
   font: inherit;
   cursor: pointer;
 }
+
+/* 成績 */
+.name-row select {
+  font-size: 15px;
+  padding: 7px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  max-width: 45%;
+}
+
+.name-row .hint {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.stat-card summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.stat-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.stat-name {
+  flex: 1;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.stat-games,
+.stat-rank {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stat-score {
+  font-weight: bold;
+  font-size: 17px;
+  min-width: 4em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.stat-detail dt {
+  color: var(--muted);
+}
+
+.stat-detail dd {
+  margin: 0;
+  text-align: right;
+}
+
+.history-summary {
+  flex-direction: column;
+  gap: 4px !important;
+}
+
+.history-ranks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+  font-size: 13px;
+}
+
+.stat-card[open] .final-table {
+  margin-top: 10px;
+}
+
+.section-gap {
+  margin-top: 20px !important;
+}

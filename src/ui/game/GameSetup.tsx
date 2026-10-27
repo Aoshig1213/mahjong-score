@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { WIND_NAMES } from '../../engine/tiles';
 import type { Rules } from '../../engine/types';
 import type { GameSettings } from '../../game/game';
+import { newId, type Member } from '../../records/records';
 import { loadLastPlayers } from './storage';
 
 const UMA_OPTIONS: { label: string; value: [number, number] }[] = [
@@ -14,51 +15,102 @@ const UMA_OPTIONS: { label: string; value: [number, number] }[] = [
 
 const POINTS = [25000, 30000];
 
+/** 席に座る人。id が空なら、まだ登録していない人（name に入力中の名前） */
+interface Seat {
+  id: string;
+  name: string;
+}
+
 interface Props {
   rules: Rules;
-  onStart: (settings: GameSettings) => void;
+  members: Member[];
+  onStart: (settings: GameSettings, members: Member[]) => void;
   onCancel: () => void;
 }
 
-export function GameSetup({ rules, onStart, onCancel }: Props) {
-  const [players, setPlayers] = useState<string[]>(() => loadLastPlayers() ?? ['', '', '', '']);
+/** 前回の4人を席に入れる。前回の記録が名前だけなら名前でメンバーを探す */
+function initialSeats(members: Member[]): Seat[] {
+  const last = loadLastPlayers() ?? [];
+  return [0, 1, 2, 3].map((i) => {
+    const m = members.find((x) => x.id === last[i]) ?? members.find((x) => x.name === last[i]);
+    return m ? { id: m.id, name: m.name } : { id: '', name: '' };
+  });
+}
+
+export function GameSetup({ rules, members, onStart, onCancel }: Props) {
+  const [seats, setSeats] = useState<Seat[]>(() => initialSeats(members));
   const [length, setLength] = useState<GameSettings['length']>('south');
   const [startPoints, setStartPoints] = useState(25000);
   const [returnPoints, setReturnPoints] = useState(25000);
   const [uma, setUma] = useState('10-20');
   const [tobi, setTobi] = useState(true);
 
-  const names = players.map((n, i) => n.trim() || `${WIND_NAMES[i]}家`);
-  const duplicated = new Set(names).size < 4;
+  const names = seats.map((s) => (s.id ? members.find((m) => m.id === s.id)!.name : s.name.trim()));
+  const empty = names.some((n) => !n);
+  const duplicated = new Set(names.filter(Boolean)).size < names.filter(Boolean).length;
 
-  const start = () =>
-    onStart({
-      players: names,
-      length,
-      startPoints,
-      returnPoints: Math.max(returnPoints, startPoints),
-      uma: UMA_OPTIONS.find((o) => o.label === uma)!.value,
-      tobi,
-      rules,
+  const setSeat = (i: number, seat: Seat) => setSeats(seats.map((s, j) => (j === i ? seat : s)));
+
+  const start = () => {
+    // 新しい名前はメンバーに登録する（同じ名前のメンバーがいればその人にする）
+    const all = [...members];
+    const ids = names.map((name) => {
+      const found = all.find((m) => m.name === name);
+      if (found) return found.id;
+      const m = { id: newId(), name };
+      all.push(m);
+      return m.id;
     });
+    onStart(
+      {
+        players: names,
+        playerIds: ids,
+        length,
+        startPoints,
+        returnPoints: Math.max(returnPoints, startPoints),
+        uma: UMA_OPTIONS.find((o) => o.label === uma)!.value,
+        tobi,
+        rules,
+      },
+      all,
+    );
+  };
 
   return (
     <div className="screen">
       <section className="card">
         <h2>席（起家から順に）</h2>
-        {players.map((name, i) => (
-          <label key={i} className="name-row">
-            <span className="chip-wind">{WIND_NAMES[i]}</span>
-            <input
-              type="text"
-              value={name}
-              placeholder={`${WIND_NAMES[i]}家`}
-              maxLength={10}
-              onChange={(e) => setPlayers(players.map((n, j) => (j === i ? e.target.value : n)))}
-            />
-          </label>
-        ))}
-        {duplicated && <p className="message">同じ名前の人がいます</p>}
+        {seats.map((seat, i) => {
+          const taken = seats.filter((_, j) => j !== i).map((s) => s.id);
+          return (
+            <div key={i} className="name-row">
+              <span className="chip-wind">{WIND_NAMES[i]}</span>
+              <select
+                value={seat.id}
+                aria-label={`${WIND_NAMES[i]}家`}
+                onChange={(e) => setSeat(i, { id: e.target.value, name: '' })}
+              >
+                <option value="">新しい人</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id} disabled={taken.includes(m.id)}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              {!seat.id && (
+                <input
+                  type="text"
+                  value={seat.name}
+                  placeholder="名前"
+                  maxLength={10}
+                  onChange={(e) => setSeat(i, { id: '', name: e.target.value })}
+                />
+              )}
+            </div>
+          );
+        })}
+        {duplicated && <p className="message">同じ人が2つの席にいます</p>}
+        <p className="hint">新しい人は、対局を始めるとメンバーに登録されます</p>
       </section>
 
       <section className="card">
@@ -111,7 +163,7 @@ export function GameSetup({ rules, onStart, onCancel }: Props) {
         <button type="button" className="button" onClick={onCancel}>
           戻る
         </button>
-        <button type="button" className="button primary" disabled={duplicated} onClick={start}>
+        <button type="button" className="button primary" disabled={empty || duplicated} onClick={start}>
           対局を始める
         </button>
       </div>

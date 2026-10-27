@@ -6,8 +6,10 @@ import { WIND_NAMES } from '../engine/tiles';
 import type { Rules, ScoreResult, Wind } from '../engine/types';
 
 export interface GameSettings {
-  /** 起家から席順に4人 */
+  /** 起家から席順に4人の名前 */
   players: string[];
+  /** players と同じ順のメンバーID（成績の集計に使う） */
+  playerIds?: string[];
   length: 'east' | 'south';
   startPoints: number;
   returnPoints: number;

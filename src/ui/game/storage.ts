@@ -32,5 +32,6 @@ function write(key: string, value: unknown): void {
 
 export const loadGame = () => read<SavedGame>(GAME_KEY);
 export const saveGame = (saved: SavedGame | null) => write(GAME_KEY, saved);
+/** 前回の4人のメンバーID（古い保存では名前） */
 export const loadLastPlayers = () => read<string[]>(PLAYERS_KEY);
-export const saveLastPlayers = (players: string[]) => write(PLAYERS_KEY, players);
+export const saveLastPlayers = (playerIds: string[]) => write(PLAYERS_KEY, playerIds);

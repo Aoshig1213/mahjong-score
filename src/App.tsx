@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { DEFAULT_RULES, type Rules } from './engine/types';
 import { applyHand, continueByDealer, endByDealer, newGame, roundLabel, type Game, type HandEvent } from './game/game';
+import { buildRecord, type Member } from './records/records';
+import { loadMembers, putGames, saveMembers } from './records/store';
+import { RecordsView } from './ui/records/RecordsView';
 import { Calculator } from './ui/Calculator';
 import { DrawFlow } from './ui/game/DrawFlow';
 import { GameSetup } from './ui/game/GameSetup';
@@ -13,7 +16,7 @@ const RULES_KEY = 'mahjong-score.rules';
 /** 1局戻すために覚えておく局の数 */
 const MAX_UNDO = 50;
 
-type View = 'home' | 'calc' | 'setup' | 'table' | 'win' | 'draw' | 'abort';
+type View = 'home' | 'calc' | 'setup' | 'table' | 'win' | 'draw' | 'abort' | 'records';
 
 function loadRules(): Rules {
   try {
@@ -28,6 +31,14 @@ export function App() {
   const [rules, setRules] = useState(loadRules);
   const [saved, setSaved] = useState<SavedGame | null>(loadGame);
   const [view, setView] = useState<View>('home');
+  const [members, setMembers] = useState<Member[]>(loadMembers);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const changeMembers = (next: Member[]) => {
+    setMembers(next);
+    saveMembers(next);
+  };
 
   const changeRules = (next: Rules) => {
     setRules(next);
@@ -56,13 +67,17 @@ export function App() {
   let body;
   if (view === 'calc') {
     body = <Calculator rules={rules} />;
+  } else if (view === 'records') {
+    body = <RecordsView members={members} onMembersChange={changeMembers} />;
   } else if (view === 'setup') {
     body = (
       <GameSetup
         rules={rules}
+        members={members}
         onCancel={() => setView('home')}
-        onStart={(settings) => {
-          saveLastPlayers(settings.players);
+        onStart={(settings, nextMembers) => {
+          changeMembers(nextMembers);
+          saveLastPlayers(settings.playerIds ?? settings.players);
           store({ game: newGame(settings), past: [] });
           setView('table');
         }}
@@ -70,6 +85,8 @@ export function App() {
     );
   } else if (game && view === 'table') {
     body = (
+      <>
+      {saveError && <p className="message">{saveError}</p>}
       <GameTable
         game={game}
         canUndo={saved.past.length > 0}
@@ -80,11 +97,26 @@ export function App() {
         onEndByDealer={() => advance(endByDealer(game))}
         onContinueByDealer={() => advance(continueByDealer(game))}
         onFixScores={(scores) => advance({ ...game, scores })}
+        saving={saving}
+        onSave={async () => {
+          setSaving(true);
+          setSaveError(null);
+          try {
+            await putGames([buildRecord(game)]);
+            store(null);
+            setView('records');
+          } catch {
+            setSaveError('成績を保存できませんでした。もう一度押してください');
+          } finally {
+            setSaving(false);
+          }
+        }}
         onQuit={() => {
           store(null);
           setView('home');
         }}
       />
+      </>
     );
   } else if (game && view === 'win') {
     body = <WinFlow game={game} onApply={apply} onCancel={() => setView('table')} />;
@@ -105,12 +137,15 @@ export function App() {
         <button type="button" className="button big" onClick={() => setView('calc')}>
           点数計算だけ使う
         </button>
+        <button type="button" className="button big" onClick={() => setView('records')}>
+          成績
+        </button>
         <RulesPanel rules={rules} onChange={changeRules} />
       </div>
     );
   }
 
-  const showHome = view === 'calc' || view === 'table' || view === 'setup';
+  const showHome = view === 'calc' || view === 'table' || view === 'setup' || view === 'records';
   return (
     <>
       <header className="app-header">
