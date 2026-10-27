@@ -41,9 +41,24 @@ button {
   padding-top: calc(10px + env(safe-area-inset-top));
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 18px;
+}
+
+.header-link {
+  background: none;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 999px;
+  color: #fff;
+  padding: 4px 12px;
+  font-size: 13px;
 }
 
 main {
@@ -504,4 +519,278 @@ button.tile:not(:disabled):active {
 .rules-row input {
   width: 22px;
   height: 22px;
+}
+
+/* 画面の共通部品 */
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-size: 15px;
+}
+
+.button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: bold;
+}
+
+.button.danger {
+  background: var(--error);
+  border-color: var(--error);
+  color: #fff;
+}
+
+.button.big {
+  padding: 16px;
+  font-size: 17px;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions .button.primary {
+  min-width: 40%;
+}
+
+.flow-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flow-header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.context-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.summary-line {
+  margin: 0;
+  font-size: 14px;
+}
+
+.chip-wind {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: 4px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: #e4ebe7;
+  color: var(--felt-dark);
+  font-size: 0.85em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.chip.active .chip-wind {
+  background: rgb(255 255 255 / 0.25);
+  color: #fff;
+}
+
+.player-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.player-picker .chip {
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+}
+
+.chip:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.plus {
+  color: var(--sou);
+}
+
+.minus {
+  color: var(--error);
+}
+
+.delta-table,
+.final-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.delta-table th,
+.final-table th {
+  font-weight: normal;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  padding: 4px 0;
+}
+
+.delta-table td,
+.final-table td {
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.delta-table td:first-child,
+.final-table td:first-child,
+.final-table td:nth-child(2) {
+  text-align: left;
+}
+
+.final-table td:nth-child(2) {
+  padding-left: 8px;
+  width: 40%;
+  white-space: normal;
+}
+
+.final-table td:last-child {
+  font-weight: bold;
+}
+
+/* 対局の画面 */
+.round-card {
+  border-top: 4px solid var(--accent);
+}
+
+.round-label {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.round-sub {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.score-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 6px;
+  border-top: 1px solid var(--line);
+  font-size: 17px;
+}
+
+.score-list li.dealer {
+  background: #f1f7f3;
+}
+
+.score-list li.dealer .chip-wind {
+  background: var(--accent);
+  color: #fff;
+}
+
+.score-name {
+  flex: 1;
+}
+
+.score-points {
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.notice {
+  border: 2px solid #e0a800;
+}
+
+.notice p {
+  margin: 0 0 10px;
+}
+
+.table-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.history li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.history-round {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-deltas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.name-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.rules-row select {
+  font-size: 15px;
+  padding: 4px;
+}
+
+.bottom-action {
+  border: none;
+  width: 100%;
+  background: var(--accent);
+  font: inherit;
+  cursor: pointer;
 }

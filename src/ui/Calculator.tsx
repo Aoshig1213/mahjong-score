@@ -1,10 +1,11 @@
 import { useMemo, useReducer } from 'react';
 import { calculate } from '../engine/calculate';
 import { WIND_NAMES, tileId } from '../engine/tiles';
-import type { Meld, Rules, Wind } from '../engine/types';
+import type { Meld, Rules, ScoreResult, Wind } from '../engine/types';
 import {
   FLAG_NAMES,
   INITIAL_STATE,
+  type CalcState,
   enabledFlags,
   handCapacity,
   reducer,
@@ -60,9 +61,35 @@ function Segmented<T extends string | number>({
 
 const winds = (n: number) => WIND_NAMES.slice(0, n).map((label, i) => ({ value: i as Wind, label }));
 
-export function Calculator({ rules }: { rules: Rules }) {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-  const enabled = enabledFlags(state);
+/** 対局の中で使うときに、対局の状態から決まる値 */
+export interface CalcContext {
+  roundWind: Wind;
+  seatWind: Wind;
+  honba: number;
+  tsumo: boolean;
+  /** 局の入力で立直したと選んだか */
+  riichi: boolean;
+}
+
+function initialState(context?: CalcContext): CalcState {
+  if (!context) return INITIAL_STATE;
+  const { riichi, ...rest } = context;
+  return { ...INITIAL_STATE, ...rest, flags: { ...INITIAL_STATE.flags, riichi } };
+}
+
+interface Props {
+  rules: Rules;
+  context?: CalcContext;
+  /** 渡すと「この点数で決定」を出す */
+  onDone?: (result: ScoreResult) => void;
+}
+
+export function Calculator({ rules, context, onDone }: Props) {
+  const [state, dispatch] = useReducer(reducer, context, initialState);
+  const base = enabledFlags(state);
+  // 対局の中では、立直したかどうかは局の入力で決めたものに合わせる
+  const enabled =
+    context && !context.riichi ? { ...base, riichi: false, doubleRiichi: false, ippatsu: false } : base;
   const riichi = enabled.riichi && (state.flags.riichi || state.flags.doubleRiichi);
   const capacity = handCapacity(state.melds);
 
@@ -78,6 +105,12 @@ export function Calculator({ rules }: { rules: Rules }) {
 
   return (
     <div className="calculator">
+      {context ? (
+        <p className="context-line">
+          場風 {WIND_NAMES[context.roundWind]}・自風 {WIND_NAMES[context.seatWind]}（{context.seatWind === 0 ? '親' : '子'}）・
+          {context.tsumo ? 'ツモ' : 'ロン'}・{context.honba}本場
+        </p>
+      ) : (
       <section className="card">
         <div className="field">
           <span className="field-label">場風</span>
@@ -112,6 +145,7 @@ export function Calculator({ rules }: { rules: Rules }) {
           </div>
         </div>
       </section>
+      )}
 
       <section className="card">
         <div className="card-head">
@@ -215,6 +249,12 @@ export function Calculator({ rules }: { rules: Rules }) {
 
       {outcome && <ResultView outcome={outcome} />}
 
+      {onDone && outcome?.ok ? (
+        <button type="button" className="bottom-bar bottom-action" onClick={() => onDone(outcome.result)}>
+          <strong>{paymentText(outcome.result.payment)}</strong>
+          <span>この点数で決定 ›</span>
+        </button>
+      ) : (
       <a className="bottom-bar" href="#result" aria-live="polite">
         {!outcome ? (
           <span>あと{missing}枚</span>
@@ -227,6 +267,7 @@ export function Calculator({ rules }: { rules: Rules }) {
           <span className="bottom-error">{outcome.error}</span>
         )}
       </a>
+      )}
     </div>
   );
 }
