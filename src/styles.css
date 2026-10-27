@@ -1,5 +1,12 @@
 /* 雀算 — 緑の卓（フェルト）に象牙色の牌、金の差し色 */
 
+/* 牌の文字の筆文字。Yuji Boku（SIL Open Font License）から、牌とロゴに使う文字だけを切り出したもの */
+@font-face {
+  font-family: 'MahjongBrush';
+  src: url('/fonts/brush.ttf') format('truetype');
+  font-display: block;
+}
+
 :root {
   color-scheme: dark;
   --felt-light: #2a7d52;
@@ -82,7 +89,7 @@ h3 {
   align-items: center;
   padding: 8px 14px 9px;
   /* スマホの時計・電池の表示の下に、少し間をあけてから名前を置く */
-  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-top: calc(28px + env(safe-area-inset-top));
   background: linear-gradient(rgb(5 25 16 / 0.92), rgb(5 25 16 / 0.82));
   border-bottom: 1px solid var(--panel-line);
 }

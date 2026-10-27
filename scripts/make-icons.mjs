@@ -47,7 +47,7 @@ const SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" vi
 function render(size) {
   return new Resvg(SVG, {
     fitTo: { mode: 'width', value: size },
-    font: { fontFiles: [FONT], loadSystemFonts: false, defaultFontFamily: 'Yu Mincho' },
+    font: { fontFiles: ['public/fonts/brush.ttf', FONT], loadSystemFonts: false, defaultFontFamily: 'Yu Mincho' },
   })
     .render()
     .asPng();
