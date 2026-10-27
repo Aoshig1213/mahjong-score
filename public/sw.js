@@ -3,14 +3,14 @@
 // JS・CSS・画像はファイル名に版が入っているので、一度取ったものを使い続ける。
 
 // アイコンや manifest を変えたら版を上げる（古い保存が消えて、新しいものを取り直す）
-const CACHE = 'mahjong-score-v2';
+const CACHE = 'mahjong-score-v3';
 const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await cache.addAll(SHELL);
+      await cache.addAll(SHELL.map((url) => new Request(url, { cache: 'no-cache' })));
       // 最初に開いたときの JS・CSS も保存しておく
       const html = await (await fetch('./', { cache: 'no-store' })).text();
       const assets = [...html.matchAll(/(?:src|href)="\.?\/?(assets\/[^"]+)"/g)].map((m) => `./${m[1]}`);
@@ -38,7 +38,8 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cache = await caches.open(CACHE);
         try {
-          const res = await fetch(req);
+          // GitHub Pages は10分ほどブラウザに覚えさせるので、それを使わずにサーバーへ確かめる
+          const res = await fetch(req.url, { cache: 'no-cache' });
           if (res.ok) await cache.put('./', res.clone());
           return res;
         } catch {
